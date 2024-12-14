@@ -86,12 +86,17 @@ jobs:
       - name: Set up JDK 11
         uses: actions/setup-java@v2
         with:
-          java-version: '11'
+          java-version: '9'
           distribution: 'temurin'
           cache: maven  
 
       - name: Run Super Linter
         run: mvn test -Dtest=CalculatorControllerCalculationTests
+      - name: Upload Super Linter Report
+        uses: actions/upload-artifact@v2
+        with:
+          name: super-linter-report
+          path: target/super-linter-report/
 
   build:
     runs-on: ubuntu-latest
@@ -104,7 +109,8 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
           cache: maven
-         
+      - name: Check Git status
+        run: git status
       - name: Build with Maven
         run: mvn clean install "-DskipTests" "-Djacoco.skip=true" "-Ddependency-check.skip=true"
       - name: Upload artifact for deployment job
