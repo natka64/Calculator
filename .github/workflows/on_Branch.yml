@@ -42,7 +42,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: code-coverage-report
-          path: target/site/jacoco
+          path: target/code-coverage-report
           retention-days: 7
 
   scan_dependency:
@@ -94,6 +94,9 @@ jobs:
           DEFAULT_BRANCH: main
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           FILTER_REGEX_INCLUDE: '^target/.*'
+          OUTPUT_FORMAT: 'SARIF'
+          OUTPUT_DETAILS: 'detailed'
+          REPORT_OUTPUT: 'target/super-linter-report/linter.log'
 
       - name: Ensure Super Linter Report Directory Exists
         run: mkdir -p target/super-linter-report/
@@ -102,7 +105,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: super-linter-report
-          path: target/super-linter-report/
+          path: target/super-linter-report/linter.html
 
   # build:
   #   runs-on: ubuntu-latest
