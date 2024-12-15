@@ -36,13 +36,13 @@ jobs:
           distribution: 'temurin'
           cache: maven
          
-      - name: Calculate code coverage
-        run: mvn jacoco:report "-DskipTests" "-Ddependency-check.skip=true"
+      - name: Run tests and calculate code coverage
+        run: mvn test jacoco:report
       - name: Archive code coverage results
         uses: actions/upload-artifact@v3
         with:
           name: code-coverage-report
-          path: target/code-coverage-report
+          path: target/site/jacoco
           retention-days: 7
 
   scan_dependency:
