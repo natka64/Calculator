@@ -26,7 +26,7 @@ jobs:
 
   run_coverage:
     runs-on: ubuntu-latest
-    needs: run_unit_tests
+    #needs: run_unit_tests
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 11
@@ -47,7 +47,7 @@ jobs:
 
   scan_dependency:
     runs-on: ubuntu-latest
-    needs: run_coverage
+    #needs: run_coverage
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 11
@@ -81,7 +81,7 @@ jobs:
       
   super-lint:
     runs-on: ubuntu-latest  
-    needs: run_coverage
+    #needs: run_coverage
     steps:
       - name: checkout repository code
         uses: actions/checkout@v3
