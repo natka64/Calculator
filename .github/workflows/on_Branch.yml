@@ -42,7 +42,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: code-coverage-report
-          path: target/code-coverage-report
+          path: target/site/jacoco
           retention-days: 7
 
   scan_dependency:
@@ -96,7 +96,7 @@ jobs:
           FILTER_REGEX_INCLUDE: '^target/.*'
 
       - name: Ensure Super Linter Report Directory Exists
-        run: mkdir -p ../target/super-linter-report/
+        run: mkdir -p target/super-linter-report/
 
       - name: Upload Super Linter Report
         uses: actions/upload-artifact@v3
