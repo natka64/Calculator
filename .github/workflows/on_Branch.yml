@@ -105,7 +105,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: super-linter-report
-          path: target/super-linter-report/linter.html
+          path: target/super-linter-report/linter.log
 
   # build:
   #   runs-on: ubuntu-latest
