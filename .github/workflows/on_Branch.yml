@@ -88,13 +88,18 @@ jobs:
         
 
       - name: Run Super Linter
-
         uses: github/super-linter@v4
         continue-on-error: true
         env:
           DEFAULT_BRANCH: main
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           FILTER_REGEX_INCLUDE: '^target/.*'
+
+      - name: Upload Super Linter Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: super-linter-report
+          path: target/super-linter-report/
 
   # build:
   #   runs-on: ubuntu-latest
