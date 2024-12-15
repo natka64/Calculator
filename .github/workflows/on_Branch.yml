@@ -84,13 +84,18 @@ jobs:
     needs: run_coverage
     steps:
       - name: checkout repository code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         
 
       - name: Run Super Linter
         uses: github/super-linter@v4
+
         continue-on-error: true
         env:
+          VALIDATE_ALL_CODEBASE: true
+          VALIDATE_JAVASCRIPT_ES: true
+          VALIDATE_PYTHON_BLACK: true
+          VALIDATE_HTML: true
           DEFAULT_BRANCH: main
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           FILTER_REGEX_INCLUDE: '^target/.*'
