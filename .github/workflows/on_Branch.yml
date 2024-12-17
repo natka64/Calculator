@@ -152,7 +152,7 @@ jobs:
           app-name: 'AdjesRekenmachine'
           # slot-name: 'Production'
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: target/*.jar
+          package: C:\Users\Ad\VisualStudioProjects\GitRepo\calculator\calculator\target\calculator-1.0.0.jar
 
       - name: Display downloaded files
         run: ls -R
