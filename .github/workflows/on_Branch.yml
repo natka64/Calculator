@@ -132,3 +132,28 @@ jobs:
         with:
           name: java-app
           path: '${{ github.workspace }}/target/*.jar'
+
+  deploy_feature:
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: Production
+
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v2
+        with:
+          name: java-app
+
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: 'AdjesRekenmachine'
+          # slot-name: 'Production'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: ${{ github.workspace }}/target/*.jar
+
+      - name: Display downloaded files
+        run: ls -R
+

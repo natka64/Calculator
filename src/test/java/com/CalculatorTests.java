@@ -18,4 +18,9 @@ public class CalculatorTests {
             .body("result", is(30.0F));
            // .time(lessThan(500L));
     }
+
+    public static void main(String[] args) {
+        CalculatorTests test = new CalculatorTests();
+        test.testAddition();
+    }
 }
