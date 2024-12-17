@@ -153,7 +153,7 @@ jobs:
           app-name: 'AdjesRekenmachine'
           # slot-name: 'Production'
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: ${{ github.workspace }}/target/*.jar
+          package: ../target/*.jar
 
       - name: Display downloaded files
         run: ls -R
