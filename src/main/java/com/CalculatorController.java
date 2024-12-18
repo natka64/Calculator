@@ -1,9 +1,12 @@
 package com;
+
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@CrossOrigin(origins = "*") // Allow all origins for testing purposes
 public class CalculatorController {
 
     @PostMapping("/calculate")
@@ -23,14 +26,13 @@ public class CalculatorController {
             case "divide":
                 result = request.getNumber1() / request.getNumber2(); 
                 break;
-
             case "area":
-                result =0.5 * request.getNumber1() * request.getNumber2();
+                result = 0.5 * request.getNumber1() * request.getNumber2();
                 break;
             default:
                 throw new IllegalArgumentException("Invalid operation"); 
         }
 
-        return new CalculationResult(result);  //this is just a comment to shore how brancheds are working
+        return new CalculationResult(result);
     }
 }

@@ -19,8 +19,8 @@ public class CalculatorTests {
            // .time(lessThan(500L));
     }
 
-    public static void main(String[] args) {
+/*     public static void main(String[] args) {
         CalculatorTests test = new CalculatorTests();
         test.testAddition();
-    }
+    } */
 }
