@@ -128,7 +128,6 @@ jobs:
     needs: build
     environment:
       name: 'Production'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     
     steps:
     - name: Download artifact from build job
@@ -136,6 +135,12 @@ jobs:
       with:
         name: java-app
         path: target
+
+    - name: Display downloaded files
+      run: ls -R target
+
+    - name: Check if jar file exists
+      run: test -f target/*.jar && echo "Jar file exists" || echo "Jar file does not exist"
 
     - name: Deploy to Azure Web App
       id: deploy-to-webapp
@@ -147,8 +152,7 @@ jobs:
         publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
         package: target/*.jar
 
-    - name: Display downloaded files
-      run: ls -R
+    
       
   deploy_front_end:
     runs-on: ubuntu-latest
