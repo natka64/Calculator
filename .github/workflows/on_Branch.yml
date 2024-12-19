@@ -95,62 +95,62 @@ jobs:
           name: java-app
           path: '${{ github.workspace }}/target/*.jar'
 
-  # deploy_feature:
-  #   runs-on: ubuntu-latest
-  #   needs: build
-  #   environment:
-  #     name: "Production"
-
-  #   steps:
-  #     - name: Download artifact from build job
-  #       uses: actions/download-artifact@v3
-  #       with:
-  #         name: java-app
-  #         path: target
-
-  #     - name: Display downloaded files
-  #       run: ls -R target
-
-  #     - name: Check if jar file exists
-  #       run: test -f target/*.jar && echo "Jar file exists" || echo "Jar file does not exist"
-
-  #     - name: Deploy to Azure Web App
-  #       id: deploy-to-webapp
-  #       uses: azure/webapps-deploy@v2
-  #       with:
-  #         app-name: 'AdjesRekenmachine'
-  #         # slot-name: 'Production'
-  #         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-  #         package: target/*.jar
-
   deploy_backend:
     runs-on: ubuntu-latest
     needs: build
     environment:
-      name: 'Production'
-    
+      name: "Production"
+
     steps:
-    - name: Download artifact from build job
-      uses: actions/download-artifact@v3
-      with:
-        name: java-app
-        path: target
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v3
+        with:
+          name: java-app
+          path: target
 
-    - name: Display downloaded files
-      run: ls -R target
+      - name: Display downloaded files
+        run: ls -R target
 
-    - name: Check if jar file exists
-      run: test -f target/*.jar && echo "Jar file exists" || echo "Jar file does not exist"
+      - name: Check if jar file exists
+        run: test -f target/*.jar && echo "Jar file exists" || echo "Jar file does not exist"
 
-    - name: Deploy to Azure Web App
-      id: deploy-to-webapp
-      uses: azure/webapps-deploy@v2
-      with:
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: 'AdjesRekenmachine'
+          # slot-name: 'Production'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: target/*.jar
+
+  # deploy_backend:
+  #   runs-on: ubuntu-latest
+  #   needs: build
+  #   environment:
+  #     name: 'Production'
+    
+  #   steps:
+  #   - name: Download artifact from build job
+  #     uses: actions/download-artifact@v3
+  #     with:
+  #       name: java-app
+  #       path: target
+
+  #   - name: Display downloaded files
+  #     run: ls -R target
+
+  #   - name: Check if jar file exists
+  #     run: test -f target/*.jar && echo "Jar file exists" || echo "Jar file does not exist"
+
+  #   - name: Deploy to Azure Web App
+  #     id: deploy-to-webapp
+  #     uses: azure/webapps-deploy@v2
+  #     with:
         
-        app-name: 'AdjesRekenmachine'
-        # slot-name: 'Production'
-        publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
-        package: target/*.jar
+  #       app-name: 'AdjesRekenmachine'
+  #       # slot-name: 'Production'
+  #       publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
+  #       package: target/*.jar
 
     
       
