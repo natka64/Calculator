@@ -1,0 +1,5 @@
+{
+    "TEST_URL": "https://adjesrekenmachine-fwdnhde5awdtfbhz.germanywestcentral-01.azurewebsites.net/calculate",
+    "AVG_THRESHOLD": "100",
+    "MAX_THRESHOLD": "250"
+}
