@@ -95,37 +95,72 @@ jobs:
           name: java-app
           path: '${{ github.workspace }}/target/*.jar'
 
-  deploy_feature:
+  # deploy_feature:
+  #   runs-on: ubuntu-latest
+  #   needs: build
+  #   environment:
+  #     name: "Production"
+
+  #   steps:
+  #     - name: Download artifact from build job
+  #       uses: actions/download-artifact@v3
+  #       with:
+  #         name: java-app
+  #         path: target
+
+  #     - name: Display downloaded files
+  #       run: ls -R target
+
+  #     - name: Check if jar file exists
+  #       run: test -f target/*.jar && echo "Jar file exists" || echo "Jar file does not exist"
+
+  #     - name: Deploy to Azure Web App
+  #       id: deploy-to-webapp
+  #       uses: azure/webapps-deploy@v2
+  #       with:
+  #         app-name: 'AdjesRekenmachine'
+  #         # slot-name: 'Production'
+  #         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+  #         package: target/*.jar
+
+  deploy_backend:
     runs-on: ubuntu-latest
     needs: build
     environment:
-      name: "Production"
-
+      name: 'Production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+    
     steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v3
-        with:
-          name: java-app
-          path: target
+    - name: Download artifact from build job
+      uses: actions/download-artifact@v3
+      with:
+        name: java-app
+        path: target
 
-      - name: Display downloaded files
-        run: ls -R target
+    - name: Deploy to Azure Web App
+      id: deploy-to-webapp
+      uses: azure/webapps-deploy@v2
+      with:
+        
+        app-name: 'AdjesRekenmachine'
+        # slot-name: 'Production'
+        publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
+        package: target/*.jar
 
-      - name: Check if jar file exists
-        run: test -f target/*.jar && echo "Jar file exists" || echo "Jar file does not exist"
-
-      - name: Deploy to Azure Web App
-        id: deploy-to-webapp
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: 'AdjesRekenmachine'
-          # slot-name: 'Production'
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: target/*.jar
+    - name: Display downloaded files
+      run: ls -R
+      
+  deploy_front_end:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run Unit Tests
+        run: echo "Running unit tests..." 
 
   postman_tests:
     runs-on: ubuntu-latest
-    needs: deploy_feature
+    needs: deploy_backend
     steps:
       - name: Checkout repository code
         uses: actions/checkout@v2
@@ -150,3 +185,29 @@ jobs:
           name: postman-report
           path: report.html
 
+  run-selenium-tests:
+    runs-on: windows-latest
+    needs: [deploy_backend,deploy_front_end]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+
+      - name: Cache Maven packages
+        uses: actions/cache@v2
+        with:
+            path: ~\.m2
+            key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+            restore-keys: ${{ runner.os }}-m2
+
+      - name: Install Firefox
+        run: |
+          choco install firefox
+
+      - name: Run Selenium tests
+        run:  mvn test -Dtest=SeleniumTest  
