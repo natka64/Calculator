@@ -1,8 +1,9 @@
 package com;
 
-import static io.restassured.RestAssured.*;
-import static org.hamcrest.Matchers.*;
-import org.junit.jupiter.api.Test; // Import JUnit Jupiter (JUnit 5) test annotation
+import static org.hamcrest.Matchers.is;
+import org.junit.jupiter.api.Test;
+
+import static io.restassured.RestAssured.given; // Import JUnit Jupiter (JUnit 5) test annotation
 
 public class CalculatorTests {
 
@@ -19,8 +20,5 @@ public class CalculatorTests {
            // .time(lessThan(500L));
     }
 
-/*     public static void main(String[] args) {
-        CalculatorTests test = new CalculatorTests();
-        test.testAddition();
-    } */
+    // ...existing code...
 }
