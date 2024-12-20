@@ -1,34 +1,32 @@
 import http from 'k6/http';
-import { sleep, check } from 'k6';
+import { check, sleep } from 'k6';
+import { Rate } from 'k6/metrics';
+
+export let errorRate = new Rate('errors');
 
 export let options = {
-  stages: [
-    { duration: '20s', target: 50 },   // Phase 1: Ramp-up to 100 VUs over 20 seconds
-    { duration: '20s', target: 100 },   // Phase 2: Ramp-up to 500 VUs over 20 seconds
-    { duration: '15s', target: 100 },  // Phase 3: Ramp-up to 1800 VUs over 15 seconds
-    { duration: '15s', target: 100 },   // Phase 4: Ramp-down to 500 VUs over 15 seconds
-    { duration: '10s', target: 0 },     // Phase 5: Ramp-down to 0 VUs over 10 seconds
-  ],
-  thresholds: {
-    'http_req_duration': ['avg<=200', 'p(90)<=350'],  // Thresholds for response times
-  },
+    thresholds: {
+        'http_req_duration': ['p(95)<1000'], // 95% of requests must complete below 500ms
+        'errors': ['rate<0.01'], // Less than 1% errors
+    },
+    stages: [
+        { duration: '1m', target: 10 }, // Ramp-up to 10 users over 1 minute
+        { duration: '3m', target: 10 }, // Stay at 10 users for 3 minutes
+        { duration: '1m', target: 0 }, // Ramp-down to 0 users over 1 minute
+    ],
 };
 
 export default function () {
-  let payload = JSON.stringify({
-    operation: 'divide',
-    number1: 5,
-    number2: 9,
-  });
+    let res = http.post('http://playground1.azurewebsites.net/calculate', JSON.stringify({
+        operation: 'add',
+        number1: 10,
+        number2: 20
+    }), { headers: { 'Content-Type': 'application/json' } });
 
-  let headers = {
-    'Content-Type': 'application/json',
-  };
+    check(res, {
+        'is status 200': (r) => r.status === 200,
+        'is result correct': (r) => r.json().result === 30.0,
+    }) || errorRate.add(1);
 
-  let response = http.post('https://playground1.azurewebsites.net/calculate', payload, { headers: headers });
-
-  check(response, {
-    'is status 200': (r) => r.status === 200,  // Check for HTTP 200 response
-  });
-  
+    sleep(1);
 }
