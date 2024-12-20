@@ -179,6 +179,8 @@ jobs:
         run: npm install -g @lhci/cli@0.8.x
 
       - name: Run Lighthouse CI
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           lhci autorun --collect.url=https://www.blazedemo.com --collect.numberOfRuns=1 --upload.target=temporary-public-storage
 
