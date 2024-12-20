@@ -35,7 +35,7 @@
 					"raw": "{\"number1\": 5, \"number2\": 5, \"operation\": \"add\"}"
 				},
 				"url": {
-					"raw": "http://playground1.azurewebsites.net/calculate",
+					"raw": "http://adjesrekenmachine-fwdnhde5awdtfbhz.germanywestcentral-01.azurewebsites.net/calculate",
 					"protocol": "http",
 					"host": [
 						"playground1",
@@ -79,7 +79,7 @@
 					"raw": "{\"number1\": 5, \"number2\": 3, \"operation\": \"subtract\"}"
 				},
 				"url": {
-					"raw": "http://playground1.azurewebsites.net/calculate",
+					"raw": "http://adjesrekenmachine-fwdnhde5awdtfbhz.germanywestcentral-01.azurewebsites.net/calculate",
 					"protocol": "http",
 					"host": [
 						"playground1",
@@ -123,7 +123,7 @@
 					"raw": "{\"number1\": 5, \"number2\": 3, \"operation\": \"multiply\"}"
 				},
 				"url": {
-					"raw": "http://playground1.azurewebsites.net/calculate",
+					"raw": "http://adjesrekenmachine-fwdnhde5awdtfbhz.germanywestcentral-01.azurewebsites.net/calculate",
 					"protocol": "http",
 					"host": [
 						"playground1",
@@ -167,7 +167,7 @@
 					"raw": "{\"number1\": 5, \"number2\": 3, \"operation\": \"divide\"}"
 				},
 				"url": {
-					"raw": "http://playground1.azurewebsites.net/calculate",
+					"raw": "http://adjesrekenmachine-fwdnhde5awdtfbhz.germanywestcentral-01.azurewebsites.net/calculate",
 					"protocol": "http",
 					"host": [
 						"playground1",

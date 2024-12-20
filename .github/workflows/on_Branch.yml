@@ -1,9 +1,5 @@
 name: Preintergation Checks on Feature Branch
 
-# on:
-#   pull_request:
-#     branches: [ master ]
-
 on:
   push:
     branches-ignore:
@@ -36,13 +32,13 @@ jobs:
           distribution: 'temurin'
           cache: maven
          
-      - name: Calculate code coverage
-        run: mvn jacoco:report "-DskipTests" "-Ddependency-check.skip=true"
+      - name: Run tests and calculate code coverage
+        run: mvn test jacoco:report
       - name: Archive code coverage results
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: code-coverage-report
-          path: target/site/jacoco/
+          path: target/site/jacoco
           retention-days: 7
 
   scan_dependency:
@@ -71,31 +67,16 @@ jobs:
         run: mvn dependency-check:check
 
       - name: Upload Dependency Check Report
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: dependency-check-report
           path: |
             target/dependency-check-report.html
             target/dependency-check-report.xml
 
-      
-  super-lint:
-    runs-on: ubuntu-latest  
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up JDK 11
-        uses: actions/setup-java@v2
-        with:
-          java-version: '11'
-          distribution: 'temurin'
-          cache: maven  
-
-      - name: Run Super Linter
-        run: mvn test -Dtest=CalculatorControllerCalculationTests
-
   build:
     runs-on: ubuntu-latest
-    needs: [super-lint,scan_dependency,run_unit_tests,run_coverage]
+    needs: [scan_dependency,run_unit_tests,run_coverage]
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 11
@@ -104,11 +85,193 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
           cache: maven
-         
+      - name: Check Git status
+        run: git status
       - name: Build with Maven
         run: mvn clean install "-DskipTests" "-Djacoco.skip=true" "-Ddependency-check.skip=true"
       - name: Upload artifact for deployment job
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: java-app
           path: '${{ github.workspace }}/target/*.jar'
+
+  deploy_backend:
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: "Production"
+
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v3
+        with:
+          name: java-app
+          path: target
+
+      - name: Display downloaded files
+        run: ls -R target
+
+      - name: Check if jar file exists
+        run: test -f target/*.jar && echo "Jar file exists" || echo "Jar file does not exist"
+
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: 'AdjesRekenmachine'
+          # slot-name: 'Production'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: target/*.jar
+
+  # deploy_backend:
+  #   runs-on: ubuntu-latest
+  #   needs: build
+  #   environment:
+  #     name: 'Production'
+    
+  #   steps:
+  #   - name: Download artifact from build job
+  #     uses: actions/download-artifact@v3
+  #     with:
+  #       name: java-app
+  #       path: target
+
+  #   - name: Display downloaded files
+  #     run: ls -R target
+
+  #   - name: Check if jar file exists
+  #     run: test -f target/*.jar && echo "Jar file exists" || echo "Jar file does not exist"
+
+  #   - name: Deploy to Azure Web App
+  #     id: deploy-to-webapp
+  #     uses: azure/webapps-deploy@v2
+  #     with:
+        
+  #       app-name: 'AdjesRekenmachine'
+  #       # slot-name: 'Production'
+  #       publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
+  #       package: target/*.jar
+
+    
+      
+  deploy_front_end:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run Unit Tests
+        run: echo "Running unit tests..." 
+
+  lighthouse_check:
+    runs-on: ubuntu-latest
+    needs: deploy_front_end
+    steps:
+      - name: Checkout repository code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16
+
+      - name: Install jq
+        run: sudo apt-get install jq
+
+      - name: Install Lighthouse
+        run: npm install -g lighthouse
+
+      - name: Run Lighthouse and check performance
+        run: |
+          lighthouse --output=json --output-path=./lighthouse_report.json --quiet --chrome-flags="--headless --no-sandbox" "https://www.blazedemo.com"
+          LIGHTHOUSE_SCORE=$(jq '.categories.performance.score * 100' ./lighthouse_report.json)
+          echo "Performance score: $LIGHTHOUSE_SCORE"
+          if [ $LIGHTHOUSE_SCORE -lt 60 ]; then
+            echo "error: Performance score is below 60. Blocking PR."
+            exit 1
+          fi
+
+      - name: Upload Lighthouse Report
+        uses: actions/upload-artifact@v2
+        with:
+          name: lighthouse-report
+          path: ./lighthouse_report.json
+
+  deploy_Backend_performance:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run Unit Tests
+        run: echo "Running unit tests..."  
+
+  k6_load_test:
+    name: k6 Load Test
+    runs-on: ubuntu-latest
+    needs: deploy_Backend_performance
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Run local k6 test
+        uses: grafana/k6-action@v0.2.0
+        with:
+          filename: ${{ github.workspace }}/src/test/K6/perftest.js
+          flags: --out json=results.json
+      - name: Upload performance test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: k6-report
+          path: results.json
+
+  postman_tests:
+    runs-on: ubuntu-latest
+    needs: deploy_backend
+    steps:
+      - name: Checkout repository code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 20
+
+      - name: Install newman
+        run: npm install -g newman
+
+      - name: Install newman-reporter-html
+        run: npm install -g newman-reporter-html
+
+      - name: Run Postman tests
+        run: newman run ${{ github.workspace }}/src/test/Postman_Tests/Calculate.postman_collection.json -r html --reporter-html-export report.html
+
+      - name: Upload test report
+        uses: actions/upload-artifact@v3
+        with:
+          name: postman-report
+          path: report.html
+
+  run-selenium-tests:
+    runs-on: windows-latest
+    needs: [deploy_backend,deploy_front_end,lighthouse_check]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+
+      - name: Cache Maven packages
+        uses: actions/cache@v2
+        with:
+            path: ~\.m2
+            key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+            restore-keys: ${{ runner.os }}-m2
+
+      - name: Install Firefox
+        run: |
+          choco install firefox
+
+      - name: Run Selenium tests
+        run:  mvn test -Dtest=SeleniumTest
