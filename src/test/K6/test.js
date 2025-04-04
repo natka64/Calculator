@@ -6,6 +6,8 @@ export const options = {
 };
 export default function () {
   // First request
+  //http.get('http://k6.io')
+
   http.get('https://test.k6.io/browser.php');
 
   // Second request
