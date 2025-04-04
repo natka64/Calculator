@@ -1,5 +1,4 @@
 name: CI Workflow
-
 on:
   workflow_dispatch:
 
