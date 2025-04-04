@@ -1,5 +1,4 @@
 name: Continuous Integration actions
-
 on:
   pull_request:
     branches: [ master ]
